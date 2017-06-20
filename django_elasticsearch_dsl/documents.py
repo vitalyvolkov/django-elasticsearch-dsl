@@ -1,23 +1,16 @@
 from __future__ import unicode_literals
-from django.utils.six import add_metaclass, iteritems
+
 from django.db import models
+from django.utils.six import add_metaclass, iteritems
 from elasticsearch.helpers import bulk
+from elasticsearch_dsl import DocType as DSLDocType
 from elasticsearch_dsl.document import DocTypeMeta as DSLDocTypeMeta
 from elasticsearch_dsl.field import Field
-from elasticsearch_dsl import DocType as DSLDocType
 
-from .exceptions import RedeclaredFieldError, ModelFieldNotMappedError
-from .fields import (
-    DEDField,
-    StringField,
-    DoubleField,
-    ShortField,
-    IntegerField,
-    LongField,
-    DateField,
-    BooleanField,
-)
-
+from .exceptions import ModelFieldNotMappedError, RedeclaredFieldError
+from .fields import BooleanField, DEDField, DateField, DoubleField, IntegerField, LongField, ShortField, StringField
+from .indices import Index
+from .registries import registry
 
 model_field_class_to_field_class = {
     models.AutoField: IntegerField,
@@ -86,12 +79,17 @@ class DocTypeMeta(DSLDocTypeMeta):
 
         cls._doc_type._fields = (
             lambda: cls._doc_type.mapping.properties.properties.to_dict())
+
+        if getattr(cls._doc_type, 'index'):
+            index = Index(cls._doc_type.index)
+            index.doc_type(cls)
+            registry.register(index, doc)
+
         return cls
 
 
 @add_metaclass(DocTypeMeta)
 class DocType(DSLDocType):
-
     def __eq__(self, other):
         return id(self) == id(other)
 
