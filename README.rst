@@ -279,12 +279,17 @@ You can use an ObjecField or NestedField.
             'pk': fields.IntegerField(),
         })
 
+        def get_instances_from_related(self, instance):
+            """If related_models is set, define how to retrieve the Car instances from the related model."""
+            return instance.car_set.all()
+
         class Meta:
             model = Car
             fields = [
                 'name',
                 'color',
             ]
+            related_models = [Manufacturer]  # Optional: to ensure the Car will be re-saved when Manufacturer is updated
 
         # Not mandadory but to improve performance we can select related in one sql request
         def get_queryset(self):
