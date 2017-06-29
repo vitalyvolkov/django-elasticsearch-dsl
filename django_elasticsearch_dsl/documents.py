@@ -53,6 +53,7 @@ class DocTypeMeta(DSLDocTypeMeta):
         ignore_signals = getattr(attrs['Meta'], "ignore_signals", False)
         auto_refresh = getattr(attrs['Meta'], 'auto_refresh', DEDConfig.auto_refresh_enabled())
         model_field_names = getattr(attrs['Meta'], "fields", [])
+        related_models = getattr(attrs['Meta'], "related_models", [])
         class_fields = set(
             name for name, field in iteritems(attrs)
             if isinstance(field, Field)
@@ -63,6 +64,7 @@ class DocTypeMeta(DSLDocTypeMeta):
         cls._doc_type.model = model
         cls._doc_type.ignore_signals = ignore_signals
         cls._doc_type.auto_refresh = auto_refresh
+        cls._doc_type.related_models = related_models
 
         doc = cls()
 
